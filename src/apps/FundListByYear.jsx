@@ -45,7 +45,7 @@ export default function FundListByYear() {
         <Card sx={{ margin: '20px' }}>
           <CardContent>
             <Table size='small'>
-              <TableHead sx={{background:'lightblue'}}>
+              <TableHead sx={{ background: 'lightblue' }}>
                 <TableRow>
                   <TableCell>Name</TableCell>
                   {year.map((row) => (<TableCell key={row.id} align="right">{row.name}</TableCell>))}
