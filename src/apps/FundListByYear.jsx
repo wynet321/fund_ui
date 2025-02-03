@@ -60,12 +60,12 @@ export default function FundListByYear() {
                     <TableCell component="th" scope="row">
                       {row.name}
                     </TableCell>
-                    <TableCell align="right">{row.oneYearRate}</TableCell>
-                    <TableCell align="right">{row.threeYearRate}</TableCell>
-                    <TableCell align="right">{row.fiveYearRate}</TableCell>
-                    <TableCell align="right">{row.sevenYearRate}</TableCell>
-                    <TableCell align="right">{row.nineYearRate}</TableCell>
-                    <TableCell align="right">{row.tenYearRate}</TableCell>
+                    <TableCell align="right">{(row.oneYearRate*100).toFixed(2)}%</TableCell>
+                    <TableCell align="right">{(row.threeYearRate*100).toFixed(2)}%</TableCell>
+                    <TableCell align="right">{(row.fiveYearRate*100).toFixed(2)}%</TableCell>
+                    <TableCell align="right">{(row.sevenYearRate*100).toFixed(2)}%</TableCell>
+                    <TableCell align="right">{(row.nineYearRate*100).toFixed(2)}%</TableCell>
+                    <TableCell align="right">{(row.tenYearRate*100).toFixed(2)}%</TableCell>
                   </TableRow>
                 )) : null}
               </TableBody>
