@@ -7,13 +7,16 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import FundListByYear from "./apps/FundListByYear";
+import FundSearch from "./apps/FundSearch";
 
 const Root = ReactDOM.createRoot(document.getElementById('root'));
 
 const router = createBrowserRouter([
   {
-    // <Route path="/" element={<Root />}>
     path:"/", element:<FundListByYear />,
+  },
+  {
+    path:"/search", element:<FundSearch />,
   }]
 );
 
