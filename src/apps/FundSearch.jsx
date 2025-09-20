@@ -109,7 +109,7 @@ export default function FundSearch() {
 
   return (
     <div>
-      <AppBar position="static">
+      {/* <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {UI_CONSTANTS.APP_TITLE}
@@ -123,7 +123,7 @@ export default function FundSearch() {
             </Button>
           </Box>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
       <Typography sx={{ marginTop: '20px', marginLeft: '20px' }} variant="h3" gutterBottom>
         {UI_CONSTANTS.FUND_SEARCH_TITLE}
       </Typography>

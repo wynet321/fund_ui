@@ -2,27 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import FundListByYear from "./apps/FundListByYear";
-import FundSearch from "./apps/FundSearch";
+import App from './components/App';
 
-const Root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const router = createBrowserRouter([
-  {
-    path:"/", element:<FundListByYear />,
-  },
-  {
-    path:"/search", element:<FundSearch />,
-  }]
-);
-
-Root.render(
+root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <App />
   </React.StrictMode>
 );
 

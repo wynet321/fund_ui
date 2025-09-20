@@ -34,7 +34,7 @@ export default function FundListByYear() {
 
   return (
     <div>
-      <AppBar position="static">
+      {/* <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {UI_CONSTANTS.APP_TITLE}
@@ -48,7 +48,7 @@ export default function FundListByYear() {
             </Button>
           </Box>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
       <Typography sx={{ marginTop: '20px', marginLeft: '20px' }} variant="h3" gutterBottom>
         {UI_CONSTANTS.FUND_LIST_TITLE}
       </Typography>
