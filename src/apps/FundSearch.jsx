@@ -21,15 +21,13 @@ import {
   Toolbar
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-
-const baseUrl = "http://localhost:9000/fund";
-const year = [
-  { id: 0, name: "一年期", abbr: "oneyearrate" },
-  { id: 1, name: "三年期", abbr: "threeyearrate" },
-  { id: 2, name: "五年期", abbr: "fiveyearrate" },
-  { id: 3, name: "七年期", abbr: "sevenyearrate" },
-  { id: 4, name: "十年期", abbr: "tenyearrate" }
-];
+import {
+  BASE_URL,
+  YEAR_PERIODS,
+  UI_CONSTANTS,
+  API_ENDPOINTS,
+  formatRate
+} from '../constants';
 
 export default function FundSearch() {
   const [fundList, setFundList] = useState([]);
@@ -41,7 +39,7 @@ export default function FundSearch() {
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
-      setError('请输入基金ID或名称');
+      setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.EMPTY_INPUT);
       return;
     }
 
@@ -58,7 +56,7 @@ export default function FundSearch() {
         await searchByFundName(searchTerm.trim());
       }
     } catch (err) {
-      setError('搜索失败，请检查输入或稍后重试');
+      setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.SEARCH_FAILED);
       console.error('Search error:', err);
     } finally {
       setLoading(false);
@@ -67,12 +65,12 @@ export default function FundSearch() {
 
   const searchByFundId = async (fundId) => {
     try {
-      const response = await axios.get(`${baseUrl}/api/rate/period/${fundId}`);
+      const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.RATE_PERIOD(fundId)}`);
       if (response.data && response.data.data) {
         setFundList([response.data.data]);
       } else {
         setFundList([]);
-        setError('未找到该基金ID');
+        setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.NOT_FOUND_BY_ID);
       }
     } catch (err) {
       // If ID search fails, try name search
@@ -82,34 +80,29 @@ export default function FundSearch() {
 
   const searchByFundName = async (fundName) => {
     try {
-      const response = await axios.get(`${baseUrl}/api/rate/year/name/${encodeURIComponent(fundName)}`);
+      const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.RATE_YEAR_NAME(fundName)}`);
       if (response.data && response.data.data) {
         const data = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
         setFundList(data);
       } else {
         setFundList([]);
-        setError('未找到匹配的基金名称');
+        setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.NOT_FOUND_BY_NAME);
       }
     } catch (err) {
       setFundList([]);
-      setError('未找到匹配的基金');
+      setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.NOT_FOUND);
     }
   };
 
   const sortFundsByYear = (funds) => {
     if (!funds || funds.length === 0) return funds;
     console.log(funds);
-    const yearField = getYearField(selectedYear);
+    const yearField = YEAR_PERIODS[selectedYear].value;
     return [...funds].sort((a, b) => {
       const rateA = a[yearField] || 0;
       const rateB = b[yearField] || 0;
       return rateB - rateA; // Descending order
     });
-  };
-
-  const getYearField = (yearIndex) => {
-    const yearFields = ['oneYearRate', 'threeYearRate', 'fiveYearRate', 'sevenYearRate', 'tenYearRate'];
-    return yearFields[yearIndex] || 'oneYearRate';
   };
 
   const sortedFundList = sortFundsByYear(fundList);
@@ -119,31 +112,31 @@ export default function FundSearch() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            基金查询系统
+            {UI_CONSTANTS.APP_TITLE}
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button color="inherit" component={Link} to="/">
-              年限基金对比
+              {UI_CONSTANTS.NAVIGATION.FUND_COMPARISON}
             </Button>
             <Button color="inherit" component={Link} to="/search">
-              基金搜索
+              {UI_CONSTANTS.NAVIGATION.FUND_SEARCH}
             </Button>
           </Box>
         </Toolbar>
       </AppBar>
       <Typography sx={{ marginTop: '20px', marginLeft: '20px' }} variant="h3" gutterBottom>
-        基金搜索
+        {UI_CONSTANTS.FUND_SEARCH_TITLE}
       </Typography>
 
       <Box sx={{ margin: '20px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
-          label="基金ID或名称"
+          label={UI_CONSTANTS.SEARCH.LABEL}
           variant="outlined"
           size="small"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="输入基金ID或名称进行搜索"
+          placeholder={UI_CONSTANTS.SEARCH.PLACEHOLDER}
           sx={{ minWidth: '300px' }}
         />
 
@@ -153,7 +146,7 @@ export default function FundSearch() {
           disabled={loading}
           sx={{ minWidth: '100px' }}
         >
-          {loading ? <CircularProgress size={20} /> : '搜索'}
+          {loading ? <CircularProgress size={20} /> : UI_CONSTANTS.SEARCH.BUTTON_TEXT}
         </Button>
 
         <Select
@@ -163,7 +156,7 @@ export default function FundSearch() {
           onChange={(event) => setSelectedYear(event.target.value)}
           sx={{ minWidth: '120px' }}
         >
-          {year.map((row) => (
+          {YEAR_PERIODS.map((row) => (
             <MenuItem key={row.id} value={row.id}>{row.name}</MenuItem>
           ))}
         </Select>
@@ -187,11 +180,11 @@ export default function FundSearch() {
             </Typography>
             {sortedFundList.length > 0 ? (
               <Table size='small'>
-                <TableHead sx={{ background: 'lightblue' }}>
+                <TableHead sx={{ background: UI_CONSTANTS.TABLE.STYLES.HEADER_BACKGROUND }}>
                   <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>名称</TableCell>
-                    {year.map((row) => (
+                    <TableCell>{UI_CONSTANTS.TABLE.HEADERS.ID}</TableCell>
+                    <TableCell>{UI_CONSTANTS.TABLE.HEADERS.NAME}</TableCell>
+                    {YEAR_PERIODS.map((row) => (
                       <TableCell key={row.id} align="right">{row.name}</TableCell>
                     ))}
                   </TableRow>
@@ -208,28 +201,20 @@ export default function FundSearch() {
                       <TableCell component="th" scope="row">
                         {row.name}
                       </TableCell>
-                      <TableCell align="right">
-                        {row.oneYearRate ? (row.oneYearRate * 100).toFixed(2) + '%' : '-'}
-                      </TableCell>
-                      <TableCell align="right">
-                        {row.threeYearRate ? (row.threeYearRate * 100).toFixed(2) + '%' : '-'}
-                      </TableCell>
-                      <TableCell align="right">
-                        {row.fiveYearRate ? (row.fiveYearRate * 100).toFixed(2) + '%' : '-'}
-                      </TableCell>
-                      <TableCell align="right">
-                        {row.sevenYearRate ? (row.sevenYearRate * 100).toFixed(2) + '%' : '-'}
-                      </TableCell>
-                      <TableCell align="right">
-                        {row.tenYearRate ? (row.tenYearRate * 100).toFixed(2) + '%' : '-'}
-                      </TableCell>
+                      {YEAR_PERIODS.map((yearItem) => {
+                        return (
+                          <TableCell key={yearItem.id} align="right">
+                            {formatRate(row[yearItem.value])}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
               <Typography variant="body1" color="text.secondary">
-                未找到匹配的基金
+                {UI_CONSTANTS.SEARCH.ERROR_MESSAGES.NOT_FOUND}
               </Typography>
             )}
           </CardContent>

@@ -2,22 +2,14 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { CircularProgress, Typography, Select, MenuItem, CardActions, Button, Table, TableBody, TableCell, TableHead, TableRow, Card, CardContent, AppBar, Toolbar, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
-
-const baseUrl = "http://localhost:9000/fund";
-const year = [
-  { id: 0, name: "一年期", value: "oneYearRate" },
-  { id: 1, name: "三年期", value: "threeYearRate" },
-  { id: 2, name: "五年期", value: "fiveYearRate" },
-  { id: 3, name: "七年期", value: "sevenYearRate" },
-  { id: 4, name: "十年期", value: "tenYearRate" }
-];
-const fundTypes = [
-  { id: 0, name: "混合型", value: "混合型" },
-  { id: 1, name: "股票型", value: "股票型" },
-  { id: 2, name: "债券型", value: "债券型" },
-  { id: 3, name: "QDII", value: "QDII" },
-  { id: 4, name: "短期理财债券型", value: "短期理财债券型" }
-];
+import {
+  BASE_URL,
+  YEAR_PERIODS,
+  FUND_TYPES,
+  UI_CONSTANTS,
+  API_ENDPOINTS,
+  formatRate
+} from '../constants';
 
 export default function FundListByYear() {
 
@@ -28,47 +20,37 @@ export default function FundListByYear() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getFundListByYear(year[selectedYear].value, fundTypes[selectedFundType].value, 50, 0);
+    getFundListByYear(YEAR_PERIODS[selectedYear].value, FUND_TYPES[selectedFundType].value, UI_CONSTANTS.PAGINATION.DEFAULT_PAGE_SIZE, UI_CONSTANTS.PAGINATION.DEFAULT_PAGE_NUMBER);
   }, [selectedYear, selectedFundType]);
 
   async function getFundListByYear(yearValue, type, pageSize, pageNumber) {
     setLoading(true)
-    await axios.get(`${baseUrl}/api/rate/periodrate/${encodeURIComponent(type)}?page=${pageNumber}&size=${pageSize}&sort=${yearValue},desc`).then((response) => {
+    await axios.get(`${BASE_URL}${API_ENDPOINTS.RATE_PERIOD_RATE(type, pageNumber, pageSize, yearValue)}`).then((response) => {
       setFundList(response.data.data.content);
     })
     setLoading(false)
   };
 
-  const getYearFieldName = (yearValue) => {
-    const fieldMap = {
-      0: 'oneYearRate',
-      1: 'threeYearRate',
-      2: 'fiveYearRate',
-      3: 'sevenYearRate',
-      4: 'tenYearRate'
-    };
-    return fieldMap[yearValue] || 'oneYearRate';
-  };
 
   return (
     <div>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            基金查询系统
+            {UI_CONSTANTS.APP_TITLE}
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button color="inherit" component={Link} to="/">
-              年限基金对比
+              {UI_CONSTANTS.NAVIGATION.FUND_COMPARISON}
             </Button>
             <Button color="inherit" component={Link} to="/search">
-              基金搜索
+              {UI_CONSTANTS.NAVIGATION.FUND_SEARCH}
             </Button>
           </Box>
         </Toolbar>
       </AppBar>
       <Typography sx={{ marginTop: '20px', marginLeft: '20px' }} variant="h3" gutterBottom>
-        年限基金对比列表
+        {UI_CONSTANTS.FUND_LIST_TITLE}
       </Typography>
       <Select
         sx={{ marginLeft: "20px" }}
@@ -77,7 +59,7 @@ export default function FundListByYear() {
         size='small'
         onChange={(event) => setSelectedYear(event.target.value)}
       >
-        {year.map((row) => (
+        {YEAR_PERIODS.map((row) => (
           <MenuItem key={row.id} value={row.id}>{row.name}</MenuItem>)
         )
         }
@@ -89,7 +71,7 @@ export default function FundListByYear() {
         size='small'
         onChange={(event) => setSelectedFundType(event.target.value)}
       >
-        {fundTypes.map((row) => (
+        {FUND_TYPES.map((row) => (
           <MenuItem key={row.id} value={row.id}>{row.name}</MenuItem>)
         )
         }
@@ -99,13 +81,13 @@ export default function FundListByYear() {
         <Card sx={{ margin: '20px' }}>
           <CardContent>
             <Table size='small'>
-              <TableHead sx={{ background: 'lightblue' }}>
+              <TableHead sx={{ background: UI_CONSTANTS.TABLE.STYLES.HEADER_BACKGROUND }}>
                 <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>公司名称</TableCell>
-                  <TableCell>类型</TableCell>
-                  {year.map((row) => (<TableCell key={row.id} align="right">{row.name}</TableCell>))}
+                  <TableCell>{UI_CONSTANTS.TABLE.HEADERS.ID}</TableCell>
+                  <TableCell>{UI_CONSTANTS.TABLE.HEADERS.NAME}</TableCell>
+                  <TableCell>{UI_CONSTANTS.TABLE.HEADERS.COMPANY_NAME}</TableCell>
+                  <TableCell>{UI_CONSTANTS.TABLE.HEADERS.TYPE}</TableCell>
+                  {YEAR_PERIODS.map((row) => (<TableCell key={row.id} align="right">{row.name}</TableCell>))}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -126,12 +108,11 @@ export default function FundListByYear() {
                     <TableCell component="th" scope="row">
                       {row.type}
                     </TableCell>
-                    {year.map((yearItem) => {
-                      const fieldName = getYearFieldName(yearItem.value);
-                      const rate = row[fieldName];
+                    {YEAR_PERIODS.map((yearItem) => {
+                      const rate = row[yearItem.value];
                       return (
                         <TableCell key={yearItem.id} align="right">
-                          {rate ? (rate * 100).toFixed(2) + '%' : '-'}
+                          {formatRate(rate)}
                         </TableCell>
                       );
                     })}
