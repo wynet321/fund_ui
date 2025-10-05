@@ -79,7 +79,6 @@ const FundChart = () => {
         await fetchChartData(selectedFund.id);
       } catch (err) {
         setError('获取图表数据失败');
-        console.error('Chart refresh error:', err);
       } finally {
         setLoading(false);
       }
@@ -111,17 +110,18 @@ const FundChart = () => {
         const data = response.data?.data;
         fundData = Array.isArray(data) ? data[0] : data;
       }
-
       if (fundData) {
         // Fetch company name if companyId exists
-        if (fundData.companyId && !fundData.companyName) {
+        if (fundData.companyId) {
           try {
             const companyResponse = await axios.get(`${BASE_URL}/api/company/${fundData.companyId}`);
+            console.log("companyResponse:", companyResponse.data);
             if (companyResponse.data) {
               fundData.companyName = companyResponse.data.name || companyResponse.data.abbr;
             }
           } catch (companyErr) {
-            console.log('Failed to fetch company info:', companyErr);
+            // Failed to fetch company info
+            console.error("Failed to fetch company info:", companyErr)
           }
         }
         setSelectedFund(fundData);
@@ -133,7 +133,6 @@ const FundChart = () => {
       }
     } catch (err) {
       setError('搜索失败，请检查输入或稍后重试');
-      console.error('Search error:', err);
     } finally {
       setLoading(false);
     }
@@ -144,16 +143,12 @@ const FundChart = () => {
       // Try to fetch real data from API first
       try {
         const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.CHART_DATA(fundId, timePeriod, startDate, endDate)}`);
-        console.log('Chart API Response:', response.data);
-        console.log('Response type:', typeof response.data);
-        console.log('Is Array?', Array.isArray(response.data));
 
         // Handle different response structures
         let priceData = response.data;
 
         // Check if data is wrapped in a property
         if (priceData && !Array.isArray(priceData)) {
-          console.log('Response keys:', Object.keys(priceData));
           // Try common wrapper properties
           if (priceData.data && Array.isArray(priceData.data)) {
             priceData = priceData.data;
@@ -164,8 +159,6 @@ const FundChart = () => {
 
         if (priceData && Array.isArray(priceData) && priceData.length > 0) {
           // Transform the data to match chart format with both price and accumulatedPrice
-          console.log('Processing price data array, length:', priceData.length);
-          console.log('First item:', priceData[0]);
 
           const transformedData = priceData.map(item => {
             // Handle nested priceIdentity structure
@@ -180,112 +173,26 @@ const FundChart = () => {
             const price = parseFloat(item.price) || 0;
             const accumulatedPrice = parseFloat(item.accumulatedPrice) || 0;
 
-            console.log('Item:', { date, price, accumulatedPrice, dateType: typeof date });
-
             return {
               date: String(date),
               price: price,
               accumulatedPrice: accumulatedPrice,
             };
           });
-          console.log('Transformed chart data:', transformedData);
-          console.log('Sample transformed item:', transformedData[0]);
 
           if (transformedData.length > 0) {
             setChartData(transformedData);
-          } else {
-            console.log('No data after transformation');
           }
           return;
-        } else {
-          console.log('Data is not an array after unwrapping or is empty:', priceData);
-          console.log('Array?', Array.isArray(priceData), 'Length:', priceData?.length);
         }
       } catch (apiError) {
-        console.log('API not available, using mock data:', apiError.message);
+        // API not available
+        console.error('API not available:', apiError);
       }
-
-      // Fallback to mock data if API is not available
-      // const mockData = generateMockChartData(timePeriod, startDate, endDate);
-      // setChartData(mockData);
     } catch (err) {
       setError('获取图表数据失败');
-      console.error('Chart data error:', err);
     }
   };
-
-  // const generateMockChartData = (period, start, end) => {
-  //   const data = [];
-  //   const startDateTime = new Date(start);
-  //   const endDateTime = new Date(end);
-  //   const daysDiff = Math.ceil((endDateTime - startDateTime) / (1000 * 60 * 60 * 24));
-
-  //   let points = daysDiff;
-  //   let increment = 1; // days
-
-  //   switch (period) {
-  //     case 'daily':
-  //       increment = 1;
-  //       break;
-  //     case 'weekly':
-  //       increment = 7;
-  //       points = Math.ceil(daysDiff / 7);
-  //       break;
-  //     case 'monthly':
-  //       increment = 30;
-  //       points = Math.ceil(daysDiff / 30);
-  //       break;
-  //     case 'yearly':
-  //       increment = 365;
-  //       points = Math.ceil(daysDiff / 365);
-  //       break;
-  //   }
-
-  //   let basePrice = 1.0;
-  //   for (let i = 0; i <= points; i++) {
-  //     const date = new Date(startDateTime);
-  //     date.setDate(startDateTime.getDate() + (i * increment));
-
-  //     // Skip if date is beyond end date
-  //     if (date > endDateTime) break;
-
-  //     let label = '';
-
-  //     switch (period) {
-  //       case 'daily':
-  //         label = date.toLocaleDateString();
-  //         break;
-  //       case 'weekly':
-  //         // Get the first day of the week (Monday)
-  //         const dayOfWeek = date.getDay();
-  //         const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  //         const firstDayOfWeek = new Date(date);
-  //         firstDayOfWeek.setDate(date.getDate() + diff);
-  //         label = firstDayOfWeek.toLocaleDateString();
-  //         break;
-  //       case 'monthly':
-  //         label = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-  //         break;
-  //       case 'yearly':
-  //         label = date.getFullYear().toString();
-  //         break;
-  //     }
-
-  //     // Generate realistic price movement
-  //     // const change = (Math.random() - 0.5) * 0.1; // ±5% change
-  //     // basePrice = basePrice * (1 + change);
-  //     // const accumulatedPrice = basePrice * 1.2; // Accumulated price is typically higher
-
-  //     data.push({
-  //       date: label,
-  //       price: parseFloat(basePrice.toFixed(4)),
-  //       accumulatedPrice: parseFloat(accumulatedPrice.toFixed(4))
-  //       // change: (change * 100).toFixed(2)
-  //     });
-  //   }
-
-  //   return data;
-  // };
 
   const handleTimePeriodChange = (event) => {
     const newPeriod = event.target.value;
@@ -312,9 +219,6 @@ const FundChart = () => {
     setLoadingSuggestions(true);
     try {
       const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.FUND_SEARCH(keyword, 10)}`);
-      console.log('Full API Response:', response);
-      console.log('Response data:', response.data);
-      console.log('Response data type:', typeof response.data);
 
       // Try different response structures
       let funds = response.data;
@@ -326,16 +230,11 @@ const FundChart = () => {
 
       // Ensure we always set an array
       if (Array.isArray(funds)) {
-        console.log('Setting suggestions:', funds);
-        console.log('Number of suggestions:', funds.length);
         setSuggestions(funds);
       } else {
-        console.log('Response is not an array:', funds);
-        console.log('Response keys:', Object.keys(funds || {}));
         setSuggestions([]);
       }
     } catch (err) {
-      console.error('Failed to fetch suggestions:', err);
       setSuggestions([]);
     } finally {
       setLoadingSuggestions(false);
@@ -372,17 +271,17 @@ const FundChart = () => {
         setSearchTerm(value.name);
 
         // Fetch company name if companyId exists
-        if (value.companyId && !value.companyName) {
+        if (value.companyId) {
           try {
             const companyResponse = await axios.get(`${BASE_URL}/api/company/${value.companyId}`);
             if (companyResponse.data) {
-              value.companyName = companyResponse.data.name || companyResponse.data.abbr;
+              value.companyName = companyResponse.data.data.name || companyResponse.data.data.abbr;
             }
           } catch (companyErr) {
-            console.log('Failed to fetch company info:', companyErr);
+            // Failed to fetch company info
+            console.error('Failed to fetch company info:', companyErr);
           }
         }
-
         setSelectedFund(value);
         fetchChartData(value.id);
         setSuggestions([]);
@@ -401,24 +300,9 @@ const FundChart = () => {
     };
   }, []);
 
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log('State update - suggestions count:', suggestions.length);
-  }, [suggestions]);
-
-  // Debug: Log chart data changes
-  useEffect(() => {
-    console.log('Chart data updated, length:', chartData.length);
-    if (chartData.length > 0) {
-      console.log('First chart data item:', chartData[0]);
-      console.log('All chart data:', chartData);
-    }
-  }, [chartData]);
 
   const renderChart = () => {
-    console.log('renderChart called, chartData.length:', chartData.length);
     if (chartData.length === 0) {
-      console.log('No chart data, returning null');
       return null;
     }
 
@@ -428,7 +312,6 @@ const FundChart = () => {
     };
 
     if (chartType === 'line') {
-      console.log('Rendering line chart with data:', commonProps);
       return (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart {...commonProps}>
@@ -548,7 +431,6 @@ const FundChart = () => {
                 style: { maxHeight: '400px' }
               }}
               renderOption={(props, option) => {
-                console.log('Rendering option:', option);
                 return (
                   <li {...props} key={option.id || option}>
                     {typeof option === 'string' ? option : `${option.name} (${option.id})`}
@@ -663,14 +545,18 @@ const FundChart = () => {
             <Typography variant="h6" gutterBottom>
               基金信息
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Chip label={`ID: ${selectedFund.id}`} color="primary" />
-              <Chip label={`名称: ${selectedFund.name}`} color="secondary" />
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Chip label={`ID: ${selectedFund.id}`} color="primary" variant="filled" />
+              <Chip label={`名称: ${selectedFund.name}`} color="secondary" variant="filled" />
               {selectedFund.companyName && (
-                <Chip label={`公司: ${selectedFund.companyName}`} color="default" />
+                <Chip
+                  label={`公司: ${selectedFund.companyName}`}
+                  color="info"
+                  variant="filled"
+                />
               )}
               {selectedFund.type && (
-                <Chip label={`类型: ${selectedFund.type}`} color="default" />
+                <Chip label={`类型: ${selectedFund.type}`} color="default" variant="outlined" />
               )}
             </Box>
           </CardContent>
