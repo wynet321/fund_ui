@@ -68,7 +68,13 @@ export const API_ENDPOINTS = {
   RATE_PERIOD: (fundId) => `/api/rate/period/${fundId}`,
   RATE_YEAR_NAME: (fundName) => `/api/rate/year/name/${encodeURIComponent(fundName)}`,
   RATE_PERIOD_RATE: (type, page, size, sort) => `/api/rate/periodrate/${encodeURIComponent(type)}?page=${page}&size=${size}&sort=${sort},desc`,
-  CHART_DATA: (fundId, period) => `/api/chart/data/${fundId}?period=${period}`
+  CHART_DATA: (fundId, period, startDate, endDate) => {
+    let url = `/api/chart/data/${fundId}?period=${period}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate) url += `&endDate=${endDate}`;
+    return url;
+  },
+  FUND_SEARCH: (keyword, limit = 10) => `/api/fund/search?keyword=${encodeURIComponent(keyword)}&limit=${limit}`
 };
 
 // Utility Functions
