@@ -1,6 +1,35 @@
-# Getting Started with Create React App
+# Fund Management System - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a React-based frontend for a fund management system, built with [Create React App](https://github.com/facebook/create-react-app).
+
+## Features
+
+- **Fund Search**: Search for funds by ID or name
+- **Fund Comparison**: Compare funds by different time periods
+- **Price Charts**: View daily/weekly/monthly/yearly price change charts for individual funds
+- **Responsive Design**: Built with Material-UI for a modern, responsive interface
+
+## New Chart Feature
+
+The application now includes a new chart page (`/chart`) that allows users to:
+
+- Search for funds by ID or name
+- View price change charts in different time periods:
+  - Daily (日线)
+  - Weekly (周线) 
+  - Monthly (月线)
+  - Yearly (年线)
+- Switch between line charts and bar charts
+- View fund information including ID, name, company, and type
+
+### Chart API Integration
+
+The chart component is designed to work with your backend API. It will attempt to fetch real data from the endpoint:
+```
+GET /api/chart/data/{fundId}?period={timePeriod}
+```
+
+If the API is not available, it will fall back to mock data for demonstration purposes.
 
 ## Available Scripts
 

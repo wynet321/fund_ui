@@ -31,7 +31,8 @@ export const UI_CONSTANTS = {
   FUND_LIST_TITLE: "年限基金对比列表",
   NAVIGATION: {
     FUND_COMPARISON: "年限基金对比",
-    FUND_SEARCH: "基金搜索"
+    FUND_SEARCH: "基金搜索",
+    FUND_CHART: "价格走势图"
   },
   SEARCH: {
     PLACEHOLDER: "输入基金ID或名称进行搜索",
@@ -66,7 +67,8 @@ export const UI_CONSTANTS = {
 export const API_ENDPOINTS = {
   RATE_PERIOD: (fundId) => `/api/rate/period/${fundId}`,
   RATE_YEAR_NAME: (fundName) => `/api/rate/year/name/${encodeURIComponent(fundName)}`,
-  RATE_PERIOD_RATE: (type, page, size, sort) => `/api/rate/periodrate/${encodeURIComponent(type)}?page=${page}&size=${size}&sort=${sort},desc`
+  RATE_PERIOD_RATE: (type, page, size, sort) => `/api/rate/periodrate/${encodeURIComponent(type)}?page=${page}&size=${size}&sort=${sort},desc`,
+  CHART_DATA: (fundId, period) => `/api/chart/data/${fundId}?period=${period}`
 };
 
 // Utility Functions

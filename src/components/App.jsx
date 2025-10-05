@@ -6,6 +6,7 @@ import Footer from './Footer';
 import Homepage from './Homepage';
 import FundSearch from '../apps/FundSearch';
 import FundListByYear from '../apps/FundListByYear';
+import FundChart from '../apps/FundChart';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
             <Route path="/" element={<Homepage />} />
             <Route path="/search" element={<FundSearch />} />
             <Route path="/comparison" element={<FundListByYear />} />
+            <Route path="/chart" element={<FundChart />} />
           </Routes>
         </Box>
         <Footer />

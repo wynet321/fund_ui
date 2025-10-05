@@ -20,6 +20,9 @@ const Header = () => {
           <Button color="inherit" component={Link} to="/comparison">
             {UI_CONSTANTS.NAVIGATION.FUND_COMPARISON}
           </Button>
+          <Button color="inherit" component={Link} to="/chart">
+            {UI_CONSTANTS.NAVIGATION.FUND_CHART}
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>
