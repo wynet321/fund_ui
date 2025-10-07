@@ -57,6 +57,7 @@ const FundChart = () => {
   };
   const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [endDate, setEndDate] = useState(getDefaultEndDate());
+  const [rateChange, setRateChange] = useState(null);
 
   const timePeriods = [
     { value: 'daily', label: '日线' },
@@ -182,6 +183,19 @@ const FundChart = () => {
 
           if (transformedData.length > 0) {
             setChartData(transformedData);
+            // Calculate rate change between start and end date
+            if (transformedData.length >= 2) {
+              const startPrice = transformedData[0].accumulatedPrice;
+              const endPrice = transformedData[transformedData.length - 1].accumulatedPrice;
+              if (startPrice > 0) {
+                const rate = ((endPrice - startPrice) / startPrice * 100).toFixed(2);
+                setRateChange(rate);
+              } else {
+                setRateChange(null);
+              }
+            } else {
+              setRateChange(null);
+            }
           }
           return;
         }
@@ -557,6 +571,13 @@ const FundChart = () => {
               )}
               {selectedFund.type && (
                 <Chip label={`类型: ${selectedFund.type}`} color="default" variant="outlined" />
+              )}
+              {rateChange !== null && (
+                <Chip
+                  label={`涨跌幅: ${rateChange}%`}
+                  color={parseFloat(rateChange) >= 0 ? "error" : "success"}
+                  variant="filled"
+                />
               )}
             </Box>
           </CardContent>
