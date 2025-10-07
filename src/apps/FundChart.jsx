@@ -58,6 +58,9 @@ const FundChart = () => {
   const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [endDate, setEndDate] = useState(getDefaultEndDate());
   const [rateChange, setRateChange] = useState(null);
+  const [dailyInvest, setDailyInvest] = useState('');
+  const [investDays, setInvestDays] = useState('');
+  const [investResult, setInvestResult] = useState(null);
 
   const timePeriods = [
     { value: 'daily', label: '日线' },
@@ -221,7 +224,57 @@ const FundChart = () => {
     if (selectedFund) {
       fetchChartData(selectedFund.id);
     }
-  }, [timePeriod]);
+  }, [timePeriod, selectedFund]);
+
+  // Calculate investment result
+  const calculateInvestment = () => {
+    if (!dailyInvest || !investDays || chartData.length === 0) {
+      setError('请输入每日投资金额和投资天数，并确保已加载图表数据');
+      return;
+    }
+
+    const dailyAmount = parseFloat(dailyInvest);
+    const days = parseInt(investDays);
+
+    if (isNaN(dailyAmount) || dailyAmount <= 0) {
+      setError('请输入有效的每日投资金额');
+      return;
+    }
+
+    if (isNaN(days) || days <= 0) {
+      setError('请输入有效的投资天数');
+      return;
+    }
+
+    // Limit days to available data
+    const actualDays = Math.min(days, chartData.length);
+    let totalShares = 0;
+
+    // Calculate total shares accumulated
+    for (let i = 0; i < actualDays; i++) {
+      const dayPrice = chartData[i].price;
+      if (dayPrice > 0) {
+        totalShares += dailyAmount / dayPrice;
+      }
+    }
+
+    // Calculate final value using end date price
+    const endPrice = chartData[chartData.length - 1].price;
+    const finalValue = totalShares * endPrice;
+    const totalInvested = dailyAmount * actualDays;
+    const profit = finalValue - totalInvested;
+    const profitRate = (profit / totalInvested * 100).toFixed(2);
+
+    setInvestResult({
+      totalInvested: totalInvested.toFixed(2),
+      finalValue: finalValue.toFixed(2),
+      profit: profit.toFixed(2),
+      profitRate: profitRate,
+      actualDays: actualDays,
+      totalShares: totalShares.toFixed(4)
+    });
+    setError('');
+  };
 
   // Fetch suggestions with debounce
   const fetchSuggestions = async (keyword) => {
@@ -559,7 +612,7 @@ const FundChart = () => {
             <Typography variant="h6" gutterBottom>
               基金信息
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
               <Chip label={`ID: ${selectedFund.id}`} color="primary" variant="filled" />
               <Chip label={`名称: ${selectedFund.name}`} color="secondary" variant="filled" />
               {selectedFund.companyName && (
@@ -580,6 +633,97 @@ const FundChart = () => {
                 />
               )}
             </Box>
+
+            {/* Investment Calculator */}
+            {chartData.length > 0 && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  定投计算器
+                </Typography>
+                <Grid container spacing={2} alignItems="flex-start">
+                  <Grid item xs={12} sm={3}>
+                    <TextField
+                      fullWidth
+                      label="每日投资金额"
+                      type="number"
+                      value={dailyInvest}
+                      onChange={(e) => setDailyInvest(e.target.value)}
+                      InputProps={{
+                        inputProps: { min: 0, step: 0.01 }
+                      }}
+                      size="small"
+                      helperText={`元`}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <TextField
+                      fullWidth
+                      label="投资天数"
+                      type="number"
+                      value={investDays}
+                      onChange={(e) => setInvestDays(e.target.value)}
+                      InputProps={{
+                        inputProps: { min: 1, step: 1 }
+                      }}
+                      size="small"
+                      helperText={`最多 ${chartData.length} 天`}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={2}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={calculateInvestment}
+                      size="medium"
+                      sx={{ height: '40px' }}
+                    >
+                      计算
+                    </Button>
+                  </Grid>
+                </Grid>
+
+                {/* Investment Result */}
+                {investResult && (
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
+                      计算结果
+                    </Typography>
+                    <Grid container spacing={1}>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          投资天数: <strong>{investResult.actualDays}</strong> 天
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          总投资: <strong>¥{investResult.totalInvested}</strong>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          累计份额: <strong>{investResult.totalShares}</strong>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          最终价值: <strong>¥{investResult.finalValue}</strong>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <Typography variant="body2" color={parseFloat(investResult.profit) >= 0 ? 'success.main' : 'error.main'}>
+                          收益: <strong>¥{investResult.profit}</strong>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <Typography variant="body2" color={parseFloat(investResult.profitRate) >= 0 ? 'success.main' : 'error.main'}>
+                          收益率: <strong>{investResult.profitRate}%</strong>
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )}
+              </Box>
+            )}
           </CardContent>
         </Card>
       )}
