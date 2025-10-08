@@ -18,19 +18,26 @@ export default function FundListByYear() {
   const [selectedYear, setSelectedYear] = useState(0);
   const [selectedFundType, setSelectedFundType] = useState(0);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
-    getFundListByYear(YEAR_PERIODS[selectedYear].value, FUND_TYPES[selectedFundType].value, UI_CONSTANTS.PAGINATION.DEFAULT_PAGE_SIZE, UI_CONSTANTS.PAGINATION.DEFAULT_PAGE_NUMBER);
+    // Use snake_case abbr for sort to match backend allowlist
+    getFundListByYear(
+      YEAR_PERIODS[selectedYear].abbr,
+      FUND_TYPES[selectedFundType].value,
+      UI_CONSTANTS.PAGINATION.DEFAULT_PAGE_SIZE,
+      UI_CONSTANTS.PAGINATION.DEFAULT_PAGE_NUMBER
+    );
   }, [selectedYear, selectedFundType]);
 
   async function getFundListByYear(yearValue, type, pageSize, pageNumber) {
     setLoading(true)
     await axios.get(`${BASE_URL}${API_ENDPOINTS.RATE_PERIOD_RATE(type, pageNumber, pageSize, yearValue)}`).then((response) => {
-      setFundList(response.data.data.content);
-    })
+      const raw = response.data;
+      const page = raw && raw.data !== undefined ? raw.data : raw;
+      const content = page && page.content ? page.content : [];
+      setFundList(content);
+    }).catch(() => setFundList([]))
     setLoading(false)
   };
-
 
   return (
     <div>

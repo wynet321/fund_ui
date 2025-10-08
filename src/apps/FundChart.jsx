@@ -107,11 +107,13 @@ const FundChart = () => {
       if (/^\d+$/.test(searchTerm.trim())) {
         // Search by ID
         const response = await axios.get(`${BASE_URL}/api/rate/period/${searchTerm.trim()}`);
-        fundData = response.data?.data;
+        const raw = response.data;
+        fundData = raw && raw.data !== undefined ? raw.data : raw;
       } else {
         // Search by name
         const response = await axios.get(`${BASE_URL}/api/rate/year/name/${encodeURIComponent(searchTerm.trim())}`);
-        const data = response.data?.data;
+        const raw = response.data;
+        const data = raw && raw.data !== undefined ? raw.data : raw;
         fundData = Array.isArray(data) ? data[0] : data;
       }
       if (fundData) {
@@ -119,9 +121,9 @@ const FundChart = () => {
         if (fundData.companyId) {
           try {
             const companyResponse = await axios.get(`${BASE_URL}/api/company/${fundData.companyId}`);
-            console.log("companyResponse:", companyResponse.data);
-            if (companyResponse.data) {
-              fundData.companyName = companyResponse.data.name || companyResponse.data.abbr;
+            const company = companyResponse.data;
+            if (company) {
+              fundData.companyName = company.name || company.abbr;
             }
           } catch (companyErr) {
             // Failed to fetch company info
@@ -341,8 +343,9 @@ const FundChart = () => {
         if (value.companyId) {
           try {
             const companyResponse = await axios.get(`${BASE_URL}/api/company/${value.companyId}`);
-            if (companyResponse.data) {
-              value.companyName = companyResponse.data.data.name || companyResponse.data.data.abbr;
+            const company = companyResponse.data;
+            if (company) {
+              value.companyName = company.name || company.abbr;
             }
           } catch (companyErr) {
             // Failed to fetch company info

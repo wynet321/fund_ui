@@ -66,8 +66,10 @@ export default function FundSearch() {
   const searchByFundId = async (fundId) => {
     try {
       const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.RATE_PERIOD(fundId)}`);
-      if (response.data && response.data.data) {
-        setFundList([response.data.data]);
+      const raw = response.data;
+      const item = raw && raw.data !== undefined ? raw.data : raw;
+      if (item) {
+        setFundList([item]);
       } else {
         setFundList([]);
         setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.NOT_FOUND_BY_ID);
@@ -81,9 +83,11 @@ export default function FundSearch() {
   const searchByFundName = async (fundName) => {
     try {
       const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.RATE_YEAR_NAME(fundName)}`);
-      if (response.data && response.data.data) {
-        const data = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
-        setFundList(data);
+      const raw = response.data;
+      const data = raw && raw.data !== undefined ? raw.data : raw;
+      if (data) {
+        const list = Array.isArray(data) ? data : [data];
+        setFundList(list);
       } else {
         setFundList([]);
         setError(UI_CONSTANTS.SEARCH.ERROR_MESSAGES.NOT_FOUND_BY_NAME);
