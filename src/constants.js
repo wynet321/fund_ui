@@ -67,7 +67,7 @@ export const UI_CONSTANTS = {
 export const API_ENDPOINTS = {
   RATE_PERIOD: (fundId) => `/api/rate/period/${fundId}`,
   RATE_YEAR_NAME: (fundName) => `/api/rate/year/name/${encodeURIComponent(fundName)}`,
-  RATE_PERIOD_RATE: (type, page, size, sort) => `/api/rate/periodrate/${encodeURIComponent(type)}?page=${page}&size=${size}&sort=${sort},desc`,
+  RATE_PERIOD_RATE: (type, page, size, sort) => `/api/rate/period_rate/${encodeURIComponent(type)}?page=${page}&size=${size}&sort=${sort},desc`,
   CHART_DATA: (fundId, period, startDate, endDate) => {
     let url = `/api/chart/data/${fundId}?period=${period}`;
     if (startDate) url += `&startDate=${startDate}`;
