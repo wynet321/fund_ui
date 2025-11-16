@@ -26,7 +26,7 @@ export const FUND_TYPES = [
 
 // UI Constants
 export const UI_CONSTANTS = {
-  APP_TITLE: "基金查询系统",
+  APP_TITLE: "苍龙基石",
   FUND_SEARCH_TITLE: "基金搜索",
   FUND_LIST_TITLE: "年限基金对比列表",
   NAVIGATION: {
